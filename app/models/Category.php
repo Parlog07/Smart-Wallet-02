@@ -46,4 +46,21 @@ public function getExpenseCategories($userId)
 }
 
 
+
+public function updateLimit($categoryId, $limit, $userId)
+{
+    $stmt = $this->db->prepare(
+        "UPDATE categories
+         SET monthly_limit = :limit
+         WHERE id = :cid AND user_id = :uid"
+    );
+
+    return $stmt->execute([
+        'limit' => $limit,
+        'cid'   => $categoryId,
+        'uid'   => $userId
+    ]);
+}
+
+
 }

@@ -34,3 +34,5 @@ CREATE TABLE expenses (
     expense_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE categories
+ADD COLUMN monthly_limit DECIMAL(10,2);
