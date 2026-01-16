@@ -34,5 +34,16 @@ class Category extends Model
     $stmt->execute(['uid' => $userId]);
     return $stmt->fetchAll();
 }
+public function getExpenseCategories($userId)
+{
+    $stmt = $this->db->prepare(
+        "SELECT * FROM categories
+         WHERE user_id = :uid AND type = 'expense'
+         ORDER BY name ASC"
+    );
+    $stmt->execute(['uid' => $userId]);
+    return $stmt->fetchAll();
+}
+
 
 }
