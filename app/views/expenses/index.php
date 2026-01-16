@@ -1,40 +1,122 @@
-<h2>Expenses</h2>
+<h2 class="text-2xl font-bold mb-6">Expenses</h2>
 
-<form method="POST" action="<?= BASE_URL ?>/expense/store">
-    <input type="number" step="0.01" name="amount" placeholder="Amount" required>
-
-    <input type="text" name="description" placeholder="Description">
-
-    <select name="category_id" required>
-        <option value="">Select category</option>
-        <?php foreach ($categories as $cat): ?>
-            <option value="<?= $cat['id'] ?>">
-                <?= htmlspecialchars($cat['name']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-
-    <input type="date" name="expense_date" required>
-
-    <button type="submit">Add Expense</button>
+<form method="GET" class="mb-4">
+  <select name="category" onchange="this.form.submit()" class="border p-2 rounded">
+    <option value="">All categories</option>
+    <?php foreach ($categories as $c): ?>
+      <option value="<?= $c['id'] ?>" <?= ($categoryId == $c['id']) ? 'selected' : '' ?>>
+        <?= htmlspecialchars($c['name']) ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
 </form>
 
-<hr>
+<button id="openAddExpense" class="bg-red-600 text-white px-4 py-2 rounded mb-4">
+  + Add Expense
+</button>
 
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Date</th>
-        <th>Amount</th>
-        <th>Category</th>
-        <th>Description</th>
-    </tr>
+<div class="bg-white rounded shadow overflow-hidden">
+  <table class="min-w-full divide-y">
+    <thead class="bg-red-100">
+      <tr>
+        <th class="px-4 py-2 text-left">Amount</th>
+        <th class="px-4 py-2 text-left">Description</th>
+        <th class="px-4 py-2 text-left">Category</th>
+        <th class="px-4 py-2 text-left">Date</th>
+        <th class="px-4 py-2 text-left">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($expenses as $e): ?>
+      <tr class="border-t">
+        <td class="px-4 py-2"><?= number_format($e["amount"], 2) ?> MAD</td>
+        <td class="px-4 py-2"><?= htmlspecialchars($e["description"]) ?></td>
+        <td class="px-4 py-2"><?= htmlspecialchars($e["category"]) ?></td>
+        <td class="px-4 py-2"><?= $e["expense_date"] ?></td>
+        <td class="px-4 py-2">
+          <button
+            class="edit-btn text-blue-600 mr-3"
+            data-id="<?= $e["id"] ?>"
+            data-amount="<?= $e["amount"] ?>"
+            data-description="<?= htmlspecialchars($e["description"]) ?>"
+            data-date="<?= $e["expense_date"] ?>"
+            data-category="<?= $e["category_id"] ?>"
+          >Edit</button>
 
-    <?php foreach ($expenses as $expense): ?>
-        <tr>
-            <td><?= htmlspecialchars($expense['expense_date']) ?></td>
-            <td><?= htmlspecialchars($expense['amount']) ?></td>
-            <td><?= htmlspecialchars($expense['category_name']) ?></td>
-            <td><?= htmlspecialchars($expense['description']) ?></td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+          <a href="<?= BASE_URL ?>/expense/delete/<?= $e["id"] ?>"
+             class="text-red-600"
+             onclick="return confirm('Delete this expense?')">
+            Delete
+          </a>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD MODAL -->
+<div id="addModal" class="fixed inset-0 hidden bg-black/40 flex items-center justify-center">
+  <form method="POST" action="<?= BASE_URL ?>/expense/store" class="bg-white p-6 rounded w-96">
+    <h3 class="text-lg font-bold mb-4">Add Expense</h3>
+
+    <select name="category_id" required class="w-full border p-2 mb-3">
+      <option value="">Select category</option>
+      <?php foreach ($categories as $c): ?>
+        <option value="<?= $c["id"] ?>"><?= htmlspecialchars($c["name"]) ?></option>
+      <?php endforeach; ?>
+    </select>
+
+    <input name="amount" type="number" step="0.01" required class="w-full border p-2 mb-3">
+    <input name="description" type="text" required class="w-full border p-2 mb-3">
+    <input name="expense_date" type="date" required class="w-full border p-2 mb-4">
+
+    <div class="flex justify-end gap-2">
+      <button type="button" id="closeAdd" class="border px-4 py-2">Cancel</button>
+      <button class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="fixed inset-0 hidden bg-black/40 flex items-center justify-center">
+  <form id="editForm" method="POST" class="bg-white p-6 rounded w-96">
+    <h3 class="text-lg font-bold mb-4">Edit Expense</h3>
+
+    <select id="editCategory" name="category_id" required class="w-full border p-2 mb-3">
+      <?php foreach ($categories as $c): ?>
+        <option value="<?= $c["id"] ?>"><?= htmlspecialchars($c["name"]) ?></option>
+      <?php endforeach; ?>
+    </select>
+
+    <input id="editAmount" name="amount" type="number" step="0.01" required class="w-full border p-2 mb-3">
+    <input id="editDescription" name="description" type="text" required class="w-full border p-2 mb-3">
+    <input id="editDate" name="expense_date" type="date" required class="w-full border p-2 mb-4">
+
+    <div class="flex justify-end gap-2">
+      <button type="button" id="closeEdit" class="border px-4 py-2">Cancel</button>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const addModal = document.getElementById("addModal");
+const editModal = document.getElementById("editModal");
+
+document.getElementById("openAddExpense").onclick = () => addModal.classList.remove("hidden");
+document.getElementById("closeAdd").onclick = () => addModal.classList.add("hidden");
+
+document.querySelectorAll(".edit-btn").forEach(btn => {
+  btn.onclick = () => {
+    editModal.classList.remove("hidden");
+    editAmount.value = btn.dataset.amount;
+    editDescription.value = btn.dataset.description;
+    editDate.value = btn.dataset.date;
+    editCategory.value = btn.dataset.category;
+    editForm.action = "<?= BASE_URL ?>/expense/update/" + btn.dataset.id;
+  };
+});
+
+document.getElementById("closeEdit").onclick = () => editModal.classList.add("hidden");
+</script>

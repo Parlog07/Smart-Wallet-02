@@ -3,20 +3,28 @@
 class ExpenseController extends Controller
 {
     public function index()
-    {
-        $this->requireAuth();
+{
+    $this->requireAuth();
 
-        $expense = new Expense();
-        $category = new Category();
+    $expenseModel = new Expense();
+    $categoryModel = new Category();
 
-        $expenses = $expense->getAllByUser($_SESSION['user_id']);
-        $categories = $category->getExpenseCategories($_SESSION['user_id']);
+    $categoryId = $_GET['category'] ?? null;
 
-        $this->view('expenses/index', [
-            'expenses' => $expenses,
-            'categories' => $categories
-        ]);
-    }
+    $expenses = $expenseModel->getAllByUser(
+        $_SESSION['user_id'],
+        $categoryId
+    );
+
+    $categories = $categoryModel->getExpenseCategories($_SESSION['user_id']);
+
+    $this->view('expenses/index', [
+        'expenses' => $expenses,
+        'categories' => $categories,
+        'categoryId' => $categoryId
+    ]);
+}
+
 
     public function store()
     {

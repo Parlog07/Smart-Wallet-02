@@ -3,10 +3,13 @@
 class Controller
 {
     protected function view($view, $data = [])
-    {
-        extract($data);
-        require_once "../app/views/$view.php";
-    }
+{
+    extract($data);
+
+    require_once "../app/views/layouts/header.php";
+    require_once "../app/views/$view.php";
+}
+
 
     protected function requireAuth()
     {

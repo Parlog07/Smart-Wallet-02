@@ -2,18 +2,28 @@
 
 class Expense extends Model
 {
-    public function getAllByUser($userId)
-    {
-        $stmt = $this->db->prepare(
-            "SELECT e.*, c.name AS category_name
-             FROM expenses e
-             LEFT JOIN categories c ON c.id = e.category_id
-             WHERE e.user_id = :uid
-             ORDER BY e.expense_date DESC"
-        );
-        $stmt->execute(['uid' => $userId]);
-        return $stmt->fetchAll();
+    public function getAllByUser($userId, $categoryId = null)
+{
+    $sql = "SELECT e.*, c.name AS category
+            FROM expenses e
+            LEFT JOIN categories c ON c.id = e.category_id
+            WHERE e.user_id = :uid";
+
+    $params = ['uid' => $userId];
+
+    if ($categoryId) {
+        $sql .= " AND e.category_id = :cid";
+        $params['cid'] = $categoryId;
     }
+
+    $sql .= " ORDER BY e.expense_date DESC";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll();
+}
+
 
     public function create($amount, $description, $categoryId, $date, $userId)
     {

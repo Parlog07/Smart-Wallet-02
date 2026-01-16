@@ -2,18 +2,28 @@
 
 class Income extends Model
 {
-    public function getAllByUser($userId)
-    {
-        $stmt = $this->db->prepare(
-            "SELECT i.*, c.name AS category_name
-             FROM incomes i
-             LEFT JOIN categories c ON c.id = i.category_id
-             WHERE i.user_id = :uid
-             ORDER BY i.income_date DESC"
-        );
-        $stmt->execute(['uid' => $userId]);
-        return $stmt->fetchAll();
+    public function getAllByUser($userId, $categoryId = null)
+{
+    $sql = "SELECT i.*, c.name AS category
+            FROM incomes i
+            LEFT JOIN categories c ON c.id = i.category_id
+            WHERE i.user_id = :uid";
+
+    $params = ['uid' => $userId];
+
+    if ($categoryId) {
+        $sql .= " AND i.category_id = :cid";
+        $params['cid'] = $categoryId;
     }
+
+    $sql .= " ORDER BY i.income_date DESC";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll();
+}
+
 
     public function create($amount, $description, $categoryId, $date, $userId)
     {
