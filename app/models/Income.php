@@ -30,4 +30,48 @@ class Income extends Model
             'user_id' => $userId
         ]);
     }
+    public function findById($id, $userId)
+{
+    $stmt = $this->db->prepare(
+        "SELECT * FROM incomes WHERE id = :id AND user_id = :uid"
+    );
+    $stmt->execute([
+        'id' => $id,
+        'uid' => $userId
+    ]);
+    return $stmt->fetch();
+}
+
+public function update($id, $amount, $description, $categoryId, $date, $userId)
+{
+    $stmt = $this->db->prepare(
+        "UPDATE incomes
+         SET amount = :amount,
+             description = :description,
+             category_id = :category_id,
+             income_date = :date
+         WHERE id = :id AND user_id = :uid"
+    );
+
+    return $stmt->execute([
+        'amount' => $amount,
+        'description' => $description,
+        'category_id' => $categoryId,
+        'date' => $date,
+        'id' => $id,
+        'uid' => $userId
+    ]);
+}
+
+public function delete($id, $userId)
+{
+    $stmt = $this->db->prepare(
+        "DELETE FROM incomes WHERE id = :id AND user_id = :uid"
+    );
+    return $stmt->execute([
+        'id' => $id,
+        'uid' => $userId
+    ]);
+}
+
 }
