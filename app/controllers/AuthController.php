@@ -3,70 +3,68 @@
 class AuthController extends Controller
 {
     public function login()
-{
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    {
+        $errors = [];
 
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        if ($email === '' || $password === '') {
-            $this->view('auth/login', ['error' => 'All fields are required']);
-            return;
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            if ($email === '' || $password === '') {
+                $errors[] = 'All fields are required';
+            } else {
+                $userModel = new User();
+                $user = $userModel->findByEmail($email);
+
+                if (!$user || !password_verify($password, $user['password'])) {
+                    $errors[] = 'Invalid email or password';
+                } else {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+
+                    header('Location: ' . BASE_URL . '/dashboard/index');
+                    exit;
+                }
+            }
         }
 
-        $user = new User();
-        $foundUser = $user->findByEmail($email);
-
-        if (!$foundUser) {
-            $this->view('auth/login', ['error' => 'Invalid email or password']);
-            return;
-        }
-
-        if (!password_verify($password, $foundUser['password'])) {
-            $this->view('auth/login', ['error' => 'Invalid email or password']);
-            return;
-        }
-
-        // LOGIN SUCCESS
-        $_SESSION['user_id'] = $foundUser['id'];
-        $_SESSION['username'] = $foundUser['username'];
-
-        header('Location: ' . BASE_URL . '/dashboard/index');
-        exit;
+        $this->view('auth/login', [
+            'errors' => $errors
+        ]);
     }
 
-    $this->view('auth/login');
-}
+    public function register()
+    {
+        $errors = [];
 
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-   public function register()
-{
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = trim($_POST['full_name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
 
-        $username = trim($_POST['username']);
-        $email    = trim($_POST['email']);
-        $password = $_POST['password'];
+            if ($name === '' || $email === '' || $password === '') {
+                $errors[] = 'All fields are required';
+            } elseif (strlen($password) < 6) {
+                $errors[] = 'Password must be at least 6 characters';
+            } else {
+                $userModel = new User();
 
-        if (!$username || !$email || !$password) {
-            $this->view('auth/register', ['error' => 'All fields are required']);
-            return;
+                if ($userModel->findByEmail($email)) {
+                    $errors[] = 'Email already exists';
+                } else {
+                    $userModel->create($name, $email, $password);
+                    header('Location: ' . BASE_URL . '/auth/login');
+                    exit;
+                }
+            }
         }
 
-        $user = new User();
-
-        if ($user->findByEmail($email)) {
-            $this->view('auth/register', ['error' => 'Email already exists']);
-            return;
-        }
-
-        $user->create($username, $email, $password);
-        header('Location: ' . BASE_URL . '/auth/login');
-        exit;
+        $this->view('auth/register', [
+            'errors' => $errors
+        ]);
     }
-
-    $this->view('auth/register');
-}
-
 
     public function logout()
     {
