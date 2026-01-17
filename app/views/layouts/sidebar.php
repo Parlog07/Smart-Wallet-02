@@ -4,22 +4,22 @@
     <nav class="space-y-3">
         <a href="<?= BASE_URL ?>/dashboard/index"
            class="block px-3 py-2 rounded hover:bg-gray-700">
-           Dashboard
+           🏠 Dashboard
         </a>
 
         <a href="<?= BASE_URL ?>/income/index"
            class="block px-3 py-2 rounded hover:bg-gray-700">
-           Incomes
+           ➕ Incomes
         </a>
 
         <a href="<?= BASE_URL ?>/expense/index"
            class="block px-3 py-2 rounded hover:bg-gray-700">
-           Expenses
+            ➖ Expenses
         </a>
 
         <a href="<?= BASE_URL ?>/category/index"
            class="block px-3 py-2 rounded hover:bg-gray-700">
-           Categories
+            📂 Categories
         </a>
 
         <hr class="border-gray-700 my-4">
